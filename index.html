@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeopardy Buzzer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Jeopardy Buzzer</h1>
+  <div id="login-container">
+    <input type="text" id="playerName" placeholder="Enter your name">
+    <button id="join">Join Game</button>
+  </div>
+  <div id="game-container" style="display: none;">
+    <button id="buzz">Buzz In!</button>
+    <h2 id="first-buzz">Waiting for the first buzz...</h2>
+    <button id="reset" style="display: none;">Reset</button>
+  </div>
+
+  <script>
+    const playerNameInput = document.getElementById("playerName");
+    const joinButton = document.getElementById("join");
+    const buzzButton = document.getElementById("buzz");
+    const resetButton = document.getElementById("reset");
+    const firstBuzzDisplay = document.getElementById("first-buzz");
+    const loginContainer = document.getElementById("login-container");
+    const gameContainer = document.getElementById("game-container");
+
+    let playerName = null;
+    let socket = null;
+
+    // Connect to WebSocket server
+    joinButton.addEventListener("click", () => {
+      playerName = playerNameInput.value.trim();
+      if (playerName) {
+        loginContainer.style.display = "none";
+        gameContainer.style.display = "block";
+
+        // Initialize WebSocket
+        socket = new WebSocket("ws://localhost:8080");
+
+        socket.onopen = () => {
+          console.log("Connected to the server");
+        };
+
+        socket.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type === 'firstBuzz') {
+            firstBuzzDisplay.textContent = `${data.player} buzzed in first!`;
+            resetButton.style.display = "block";
+            buzzButton.disabled = true;
+          } else if (data.type === 'reset') {
+            firstBuzzDisplay.textContent = "Waiting for the first buzz...";
+            buzzButton.disabled = false;
+            resetButton.style.display = "none";
+          }
+        };
+      }
+    });
+
+    // Buzz in button
+    buzzButton.addEventListener("click", () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'buzz', player: playerName }));
+      }
+    });
+
+    // Reset button
+    resetButton.addEventListener("click", () => {
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'reset' }));
+      }
+    });
+  </script>
+</body>
+</html>
