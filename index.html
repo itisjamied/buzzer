@@ -5,9 +5,28 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button id="player1">Player 1</button>
-    <button id="player2">Player 2</button>
-    <div id="winner"></div>
+    <div id="role-selection">
+        <h2>Choose Your Role</h2>
+        <button id="host-button">Host</button>
+        <button id="player-button">Player</button>
+    </div>
+
+    <div id="host-controls" style="display: none;">
+        <button id="start-timer">Start Timer</button>
+        <div id="timer-display"></div>
+    </div>
+
+    <div id="player-controls" style="display: none;">
+        <button id="player-button">Buzz In</button>
+        <div id="player-time-display"></div>
+    </div>
+
+    <div id="results" style="display: none;">
+        <h2>Results</h2>
+        <ul id="player-times"></ul>
+        <div id="winner-display"></div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

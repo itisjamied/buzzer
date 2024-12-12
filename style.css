@@ -10,3 +10,10 @@ button {
     text-align: center;
     margin-top: 20px;
 }
+
+/* ... previous CSS styles ... */
+
+#role-selection, #host-controls, #player-controls, #results {
+    text-align: center;
+    margin-top: 20px;
+}
