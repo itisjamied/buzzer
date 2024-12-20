@@ -25,6 +25,17 @@ const server = http.createServer((req, res) => {
                 res.end(data);
             }
         });
+    } else if (req.url === '/script.js') {
+        // Serve script.js
+        fs.readFile(path.join(__dirname, 'script.js'), (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Error loading script.js');
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/javascript' });
+                res.end(data);
+            }
+        });
     } else {
         res.writeHead(404);
         res.end('Not Found');
