@@ -35,14 +35,14 @@ document.getElementById('joinButton').addEventListener('click', () => {
 
 
 // Join Page
-document.getElementById('joinGameButton').addEventListener('click', () => {
-    gameCode = document.getElementById('gameCodeInput').value;
-    playerName = document.getElementById('playerNameInput').value;
-    if (gameCode && playerName) {
-        ws.send(JSON.stringify({ type: 'join', gameCode, playerName }));
-        switchPage('waiting');
-    }
-});
+// document.getElementById('joinGameButton').addEventListener('click', () => {
+//     gameCode = document.getElementById('gameCodeInput').value;
+//     playerName = document.getElementById('playerNameInput').value;
+//     if (gameCode && playerName) {
+//         ws.send(JSON.stringify({ type: 'join', gameCode, playerName }));
+//         switchPage('waiting');
+//     }
+// });
 
 //Automatically transform game code input to uppercase
 document.getElementById('gameCodeInput').addEventListener('input', (e) => {
