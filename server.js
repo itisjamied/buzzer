@@ -27,23 +27,26 @@ const games = {};
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
-
+        
         if (data.type === 'join') {
             if (!games[data.gameCode]) {
-                games[data.gameCode] = { host: null, players: [] };
+                games[data.gameCode] = { host: null, players: [], buzzes: [] };
             }
             games[data.gameCode].players.push(data.playerName);
         } else if (data.type === 'start') {
             games[data.gameCode].host = ws;
-            games[data.gameCode].players.forEach(player => {
-                ws.send(JSON.stringify({ type: 'start' }));
+            // Notify all players the round has started
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ type: 'start' }));
+                }
             });
         } else if (data.type === 'buzz') {
-            games[data.gameCode].buzzes = games[data.gameCode].buzzes || [];
             if (!games[data.gameCode].buzzes.includes(data.playerName)) {
                 games[data.gameCode].buzzes.push(data.playerName);
             }
-
+    
+            // Check if all players have buzzed
             if (games[data.gameCode].buzzes.length === games[data.gameCode].players.length) {
                 const results = games[data.gameCode].buzzes;
                 wss.clients.forEach(client => {
@@ -54,7 +57,7 @@ wss.on('connection', (ws) => {
             }
         }
     });
-
+    
     ws.on('close', () => {
         console.log('Client disconnected');
     });
