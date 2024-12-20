@@ -32,6 +32,8 @@ document.getElementById('joinButton').addEventListener('click', () => {
     switchPage('join');
 });
 
+
+
 // Join Page
 document.getElementById('joinGameButton').addEventListener('click', () => {
     gameCode = document.getElementById('gameCodeInput').value;
@@ -41,6 +43,23 @@ document.getElementById('joinGameButton').addEventListener('click', () => {
         switchPage('waiting');
     }
 });
+
+//Automatically transform game code input to uppercase
+document.getElementById('gameCodeInput').addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase();
+});
+
+// Fix paste issue in Join Game functionality
+document.getElementById('joinGameButton').addEventListener('click', () => {
+    gameCode = document.getElementById('gameCodeInput').value.trim();
+    playerName = document.getElementById('playerNameInput').value.trim();
+    if (gameCode && playerName) {
+        ws.send(JSON.stringify({ type: 'join', gameCode, playerName }));
+        switchPage('waiting');
+    }
+});
+
+
 
 // Host Page
 document.getElementById('startRoundButton').addEventListener('click', () => {
@@ -55,6 +74,8 @@ document.getElementById('startRoundButton').addEventListener('click', () => {
         document.getElementById('totalPlayers').textContent = playerCount;
     }
 });
+
+
 
 // Buzz Page
 document.getElementById('buzzButton').addEventListener('click', () => {
@@ -107,8 +128,23 @@ ws.onmessage = (event) => {
         if (isHost) {
             updateBuzzStatus([], document.getElementById('playerCount').textContent);
         }
-    } else if (data.type === 'buzzUpdate' && isHost) {
+    // } else if (data.type === 'buzzUpdate' && isHost) {
+    //     updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
+    if (data.type === 'buzzUpdate' && isHost) {
         updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
+
+        // Check if all players have buzzed
+        if (data.buzzedPlayers.length === data.totalPlayers) {
+            const startNewRoundButton = document.createElement('button');
+            startNewRoundButton.textContent = 'Start New Buzzer Round';
+            startNewRoundButton.id = 'startNewRoundButton';
+            startNewRoundButton.addEventListener('click', () => {
+                ws.send(JSON.stringify({ type: 'start', gameCode }));
+                switchPage('buzz');
+            });
+            document.getElementById('hostPage').appendChild(startNewRoundButton);
+        }
+    }
     } else if (data.type === 'results') {
         const resultsList = document.getElementById('resultsList');
         resultsList.innerHTML = '';

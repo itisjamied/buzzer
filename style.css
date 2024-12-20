@@ -2,7 +2,7 @@
 body {
     font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0px 20px 0px 20px;
     background: #2D2D2D;
     color: white;
     min-height: 100vh;
@@ -186,3 +186,12 @@ ul {
 
 #resultPage { background: #4A90E2; }
 #resultPage h1 { color: white; }
+
+#startNewRoundButton {
+    margin-top: 20px;
+    background: #FF6B6B;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
