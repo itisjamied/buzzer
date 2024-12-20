@@ -24,17 +24,36 @@ const wss = new WebSocket.Server({ server });
 
 const games = {};
 
+// Helper function to send player updates to host
+const updateHostPlayers = (gameCode) => {
+    if (games[gameCode] && games[gameCode].host) {
+        games[gameCode].host.send(JSON.stringify({
+            type: 'playerUpdate',
+            players: games[gameCode].players
+        }));
+    }
+};
+
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         
-        if (data.type === 'join') {
+        if (data.type === 'host') {
+            if (!games[data.gameCode]) {
+                games[data.gameCode] = { host: ws, players: [], buzzes: [] };
+            } else {
+                games[data.gameCode].host = ws;
+            }
+        } else if (data.type === 'join') {
             if (!games[data.gameCode]) {
                 games[data.gameCode] = { host: null, players: [], buzzes: [] };
             }
             games[data.gameCode].players.push(data.playerName);
+            // Send updated player list to host
+            updateHostPlayers(data.gameCode);
         } else if (data.type === 'start') {
-            games[data.gameCode].host = ws;
+            // Reset buzzes array for new round
+            games[data.gameCode].buzzes = [];
             // Notify all players the round has started
             wss.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
@@ -59,6 +78,24 @@ wss.on('connection', (ws) => {
     });
     
     ws.on('close', () => {
+        // Clean up games and remove disconnected players
+        for (const gameCode in games) {
+            if (games[gameCode].host === ws) {
+                games[gameCode].host = null;
+            } else {
+                // Find and remove disconnected player
+                for (const gameCode in games) {
+                    const players = games[gameCode].players;
+                    for (let i = players.length - 1; i >= 0; i--) {
+                        if (ws === players[i]) {
+                            players.splice(i, 1);
+                            updateHostPlayers(gameCode);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         console.log('Client disconnected');
     });
 });

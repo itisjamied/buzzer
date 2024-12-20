@@ -7,6 +7,12 @@
     <style>
         .page { display: none; }
         .page.active { display: block; }
+        #playerList {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -19,6 +25,10 @@
     <div id="hostPage" class="page">
         <h1>Host a Game</h1>
         <p>Your game code: <span id="gameCode"></span></p>
+        <div id="playerList">
+            <h3>Players (<span id="playerCount">0</span>):</h3>
+            <ul id="connectedPlayers"></ul>
+        </div>
         <button id="startRoundButton">Start a Buzzing Round</button>
     </div>
 
@@ -69,6 +79,7 @@
             isHost = true;
             gameCode = Math.random().toString(36).substr(2, 6).toUpperCase();
             document.getElementById('gameCode').textContent = gameCode;
+            ws.send(JSON.stringify({ type: 'host', gameCode }));
             switchPage('host');
         });
 
@@ -97,11 +108,28 @@
             ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
         });
 
+        // Update player list
+        const updatePlayerList = (players) => {
+            const playerCount = document.getElementById('playerCount');
+            const connectedPlayers = document.getElementById('connectedPlayers');
+            
+            playerCount.textContent = players.length;
+            connectedPlayers.innerHTML = '';
+            
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player;
+                connectedPlayers.appendChild(li);
+            });
+        };
+
         // WebSocket Events
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
 
-            if (data.type === 'start') {
+            if (data.type === 'playerUpdate' && isHost) {
+                updatePlayerList(data.players);
+            } else if (data.type === 'start') {
                 switchPage('buzz');
             } else if (data.type === 'results') {
                 const resultsList = document.getElementById('resultsList');
