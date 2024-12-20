@@ -4,50 +4,6 @@ let gameCode = '';
 let isHost = false;
 let playerName = '';
 
-
-// Add this to your script.js file
-
-// Page transition animation
-function switchPage(page) {
-    Object.values(pages).forEach(p => {
-        p.classList.remove('active');
-        p.style.transform = 'translateY(20px)';
-        p.style.opacity = '0';
-    });
-    
-    // Small delay for smooth transition
-    setTimeout(() => {
-        pages[page].classList.add('active');
-    }, 50);
-}
-
-// Buzz button animation
-const buzzButton = document.getElementById('buzzButton');
-if (buzzButton) {
-    buzzButton.addEventListener('mousedown', () => {
-        buzzButton.style.transform = 'scale(0.95)';
-    });
-    
-    buzzButton.addEventListener('mouseup', () => {
-        buzzButton.style.transform = 'scale(1)';
-    });
-}
-
-// Add confetti animation for winners
-function showConfetti() {
-    const colors = ['#FF3355', '#4A90E2', '#FFD700', '#2ECC71'];
-    
-    for (let i = 0; i < 100; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.left = Math.random() * 100 + 'vw';
-        confetti.style.animationDelay = Math.random() * 3 + 's';
-        document.body.appendChild(confetti);
-        
-        setTimeout(() => confetti.remove(), 3000);
-    }
-}
 // Page Elements
 const pages = {
     home: document.getElementById('homePage'),
@@ -154,7 +110,6 @@ ws.onmessage = (event) => {
     } else if (data.type === 'buzzUpdate' && isHost) {
         updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
     } else if (data.type === 'results') {
-        showConfetti();
         const resultsList = document.getElementById('resultsList');
         resultsList.innerHTML = '';
         data.results.forEach((result, index) => {
@@ -165,4 +120,3 @@ ws.onmessage = (event) => {
         switchPage('result');
     }
 };
-
