@@ -5,24 +5,135 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Buzzer App</title>
     <style>
-        .page { display: none; }
-        .page.active { display: block; }
-        #playerList, #buzzStatus {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #buzzOrder {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        #buzzOrder li {
-            margin: 5px 0;
-            padding: 5px;
-            background-color: #f0f0f0;
-            border-radius: 3px;
-        }
+      /* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #111;
+    color: #fff;
+}
+
+.page {
+    display: none;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.page.active {
+    display: flex;
+}
+
+/* Button styles */
+button {
+    padding: 15px 25px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px 0;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:disabled {
+    background-color: #444;
+    cursor: not-allowed;
+}
+
+/* Host page styles */
+#hostPage {
+    background-color: #f7e9a0;
+    border-radius: 15px;
+    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25);
+    padding: 20px;
+}
+
+/* Waiting page */
+#waitingPage {
+    background: linear-gradient(to bottom, #89cff0, #add8e6);
+    color: #000;
+}
+
+#waitingPage h1 {
+    font-size: 24px;
+    text-align: center;
+    color: #333;
+}
+
+#waitingPage h1::before {
+    content: "☁️ ";
+}
+
+#buzzPage {
+    background: linear-gradient(to bottom, #fa8072, #f08080);
+    border-radius: 15px;
+}
+
+/* Result page */
+#resultPage {
+    background-color: #b0e57c;
+    color: #111;
+}
+
+/* Game code and list */
+#gameCode {
+    font-weight: bold;
+    font-size: 1.5em;
+    color: #444;
+}
+
+#playerList {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    width: 80%;
+}
+
+#buzzOrder {
+    font-size: 1.2em;
+    list-style-type: none;
+}
+
+#buzzOrder li {
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin: 5px 0;
+}
+
+/* Header styling */
+h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* For mobile view */
+@media screen and (max-width: 768px) {
+    button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    #buzzOrder li {
+        font-size: 1em;
+    }
+}
+
     </style>
      <script>
         // Add this function at the start of your script
