@@ -75,8 +75,6 @@ document.getElementById('startRoundButton').addEventListener('click', () => {
     }
 });
 
-
-
 // Buzz Page
 document.getElementById('buzzButton').addEventListener('click', () => {
     ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
@@ -119,19 +117,27 @@ ws.onmessage = (event) => {
 
   if (data.type === "playerUpdate" && isHost) {
     updatePlayerList(data.players);
-  } else if (data.type === "start") {
+} else if (data.type === "start") {
     switchPage("buzz");
+    document.getElementById("buzzButton").disabled = false; // Enable the button
+    document.getElementById("buzzButton").classList.remove("disabled"); // Remove any disabled styles
+    document.getElementById("buzzOrder").innerHTML = ""; // Clear the buzz order
+    document.getElementById("buzzCounter").textContent = "0"; // Reset the counter
+
     // Show appropriate elements based on host status
     document.getElementById("buzzStatus").style.display = isHost
-      ? "block"
-      : "none";
+        ? "block"
+        : "none";
     document.getElementById("buzzButton").style.display = isHost
-      ? "none"
-      : "block";
+        ? "none"
+        : "block";
+
     // Reset buzz status for host
     if (isHost) {
-      updateBuzzStatus([], document.getElementById("playerCount").textContent);
+        updateBuzzStatus([], document.getElementById("playerCount").textContent);
     }
+
+
   } else if (data.type === "buzzUpdate" && isHost) {
     updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
   } else if (data.type === "results") {
