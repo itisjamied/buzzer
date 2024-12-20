@@ -1,18 +1,34 @@
 const WebSocket = require('ws');
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-const wss = new WebSocket.Server({ port: 8080 });
+const server = http.createServer((req, res) => {
+    if (req.url === '/') {
+        fs.readFile(path.join(__dirname, 'index.html'), (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Error loading index.html');
+            } else {
+                res.writeHead(200, { 'Content-Type': 'text/html' });
+                res.end(data);
+            }
+        });
+    } else {
+        res.writeHead(404);
+        res.end('Not Found');
+    }
+});
 
-const clients = new Set();
+const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws) => {
     console.log('A new client connected.');
-    clients.add(ws);
 
     ws.on('message', (message) => {
         console.log(`Received: ${message}`);
-        // Broadcast the buzzer event to all clients
-        clients.forEach((client) => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
         });
@@ -20,8 +36,9 @@ wss.on('connection', (ws) => {
 
     ws.on('close', () => {
         console.log('A client disconnected.');
-        clients.delete(ws);
     });
 });
 
-console.log('WebSocket server is running on ws://localhost:8080');
+server.listen(8080, () => {
+    console.log('Server is running on http://localhost:8080');
+});
