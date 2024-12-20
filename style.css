@@ -1,22 +1,179 @@
-.page { display: none; }
-.page.active { display: block; }
-#playerList, #buzzStatus {
-    margin-top: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-#buzzOrder {
-    list-style-type: none;
-    padding-left: 0;
-}
-#buzzOrder li {
-    margin: 5px 0;
-    padding: 5px;
-    background-color: #f0f0f0;
-    border-radius: 3px;
+/* Global Styles */
+body {
+    font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #2D2D2D;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
 }
 
-h1{
-    color:red;
+.page {
+    display: none;
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    max-width: 600px;
+    width: 90%;
+    margin: auto;
+    text-align: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
 }
+
+.page.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Typography */
+h1 {
+    color: #2D2D2D;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    animation: bounceIn 0.6s ease;
+}
+
+/* Buttons */
+button {
+    background: #FF3355;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(255, 51, 85, 0.3);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 51, 85, 0.4);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+#buzzButton {
+    background: #FF3355;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    font-size: 2.5rem;
+    margin: 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s infinite;
+}
+
+/* Input Fields */
+input {
+    width: 80%;
+    padding: 15px;
+    margin: 10px 0;
+    border: 2px solid #E0E0E0;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    transition: border-color 0.3s ease;
+}
+
+input:focus {
+    border-color: #FF3355;
+    outline: none;
+}
+
+/* Player List & Buzz Status */
+#playerList, #buzzStatus {
+    background: #F8F9FA;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    color:black;
+
+}
+
+#buzzOrder li, #connectedPlayers li {
+    background: white;
+    padding: 10px 15px;
+    margin: 8px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    animation: slideIn 0.3s ease;
+}
+
+/* Game Code Display */
+#gameCode {
+    background: #F0F0F0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color:black;
+}
+
+/* Waiting Page */
+#waitingPage {
+    background: #4A90E2;
+    color: white;
+}
+
+#waitingPage h1 {
+    color: white;
+}
+
+/* Results Page */
+#resultsList li {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    animation: slideIn 0.3s ease;
+}
+
+#resultsList li:nth-child(1) { background: #FFD700; }
+#resultsList li:nth-child(2) { background: #C0C0C0; }
+#resultsList li:nth-child(3) { background: #CD7F32; }
+#resultsList li:nth-child(n+4) { background: #F8F9FA; }
+
+/* Animations */
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Page-specific themes */
+#homePage { background: linear-gradient(135deg, #FF6B6B, #FF3355); }
+#homePage h1 { color: white; }
+#homePage button { background: white; color: #FF3355; }
+
+#buzzPage { background: #FF3355; }
+#buzzPage h1 { color: white; }
+
+#resultPage { background: #4A90E2; }
+#resultPage h1 { color: white; }
