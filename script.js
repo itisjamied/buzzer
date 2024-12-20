@@ -40,7 +40,6 @@ const startCountdown = (callback) => {
 };
 
 
-
 // Home Page
 document.getElementById('hostButton').addEventListener('click', () => {
     isHost = true;

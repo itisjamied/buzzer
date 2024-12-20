@@ -216,7 +216,7 @@ ul {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #FF3355;
+    background: #ff788f;
     color: white;
     font-size: 5rem;
     display: flex;
@@ -224,5 +224,4 @@ ul {
     align-items: center;
     z-index: 1000;
 }
-
 
