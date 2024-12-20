@@ -4,38 +4,116 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Buzzer App</title>
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
 </head>
 <body>
-    <h1>Real-Time Buzzer</h1>
-    <button id="buzzButton">Buzz!</button>
-    <ul id="events"></ul>
+    <div id="homePage" class="page active">
+        <h1>Welcome to Real-Time Buzzer</h1>
+        <button id="hostButton">Host a Game</button>
+        <button id="joinButton">Join a Game</button>
+    </div>
+
+    <div id="hostPage" class="page">
+        <h1>Host a Game</h1>
+        <p>Your game code: <span id="gameCode"></span></p>
+        <button id="startRoundButton">Start a Buzzing Round</button>
+    </div>
+
+    <div id="joinPage" class="page">
+        <h1>Join a Game</h1>
+        <input id="gameCodeInput" type="text" placeholder="Enter Game Code" />
+        <input id="playerNameInput" type="text" placeholder="Enter Your Name" />
+        <button id="joinGameButton">Join Game</button>
+    </div>
+
+    <div id="waitingPage" class="page">
+        <h1>Waiting for Host...</h1>
+    </div>
+
+    <div id="buzzPage" class="page">
+        <h1>Buzz In!</h1>
+        <button id="buzzButton">Buzz!</button>
+    </div>
+
+    <div id="resultPage" class="page">
+        <h1>Results</h1>
+        <ul id="resultsList"></ul>
+    </div>
 
     <script>
         const ws = new WebSocket('ws://localhost:8080');
-        const button = document.getElementById('buzzButton');
-        const eventsList = document.getElementById('events');
+        let gameCode = '';
+        let isHost = false;
+        let playerName = '';
 
-        ws.onopen = () => {
-            console.log('Connected to WebSocket server');
+        // Page Elements
+        const pages = {
+            home: document.getElementById('homePage'),
+            host: document.getElementById('hostPage'),
+            join: document.getElementById('joinPage'),
+            waiting: document.getElementById('waitingPage'),
+            buzz: document.getElementById('buzzPage'),
+            result: document.getElementById('resultPage')
         };
 
-        ws.onmessage = (event) => {
-            const li = document.createElement('li');
-            li.textContent = event.data;
-            eventsList.appendChild(li);
+        const switchPage = (page) => {
+            Object.values(pages).forEach(p => p.classList.remove('active'));
+            pages[page].classList.add('active');
         };
 
-        ws.onclose = () => {
-            console.log('Disconnected from WebSocket server');
-        };
+        // Home Page
+        document.getElementById('hostButton').addEventListener('click', () => {
+            isHost = true;
+            gameCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('gameCode').textContent = gameCode;
+            switchPage('host');
+        });
 
-        button.addEventListener('click', () => {
-            const userName = prompt('Enter your name:', 'Player');
-            if (userName) {
-                const message = `${userName} buzzed!`;
-                ws.send(message);
+        document.getElementById('joinButton').addEventListener('click', () => {
+            switchPage('join');
+        });
+
+        // Join Page
+        document.getElementById('joinGameButton').addEventListener('click', () => {
+            gameCode = document.getElementById('gameCodeInput').value;
+            playerName = document.getElementById('playerNameInput').value;
+            if (gameCode && playerName) {
+                ws.send(JSON.stringify({ type: 'join', gameCode, playerName }));
+                switchPage('waiting');
             }
         });
+
+        // Host Page
+        document.getElementById('startRoundButton').addEventListener('click', () => {
+            ws.send(JSON.stringify({ type: 'start', gameCode }));
+            switchPage('buzz');
+        });
+
+        // Buzz Page
+        document.getElementById('buzzButton').addEventListener('click', () => {
+            ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
+        });
+
+        // WebSocket Events
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'start') {
+                switchPage('buzz');
+            } else if (data.type === 'results') {
+                const resultsList = document.getElementById('resultsList');
+                resultsList.innerHTML = '';
+                data.results.forEach((result, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${index + 1}. ${result}`;
+                    resultsList.appendChild(li);
+                });
+                switchPage('result');
+            }
+        };
     </script>
 </body>
 </html>

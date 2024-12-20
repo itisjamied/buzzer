@@ -22,20 +22,41 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-    console.log('A new client connected.');
+const games = {};
 
+wss.on('connection', (ws) => {
     ws.on('message', (message) => {
-        console.log(`Received: ${message}`);
-        wss.clients.forEach((client) => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
+        const data = JSON.parse(message);
+
+        if (data.type === 'join') {
+            if (!games[data.gameCode]) {
+                games[data.gameCode] = { host: null, players: [] };
             }
-        });
+            games[data.gameCode].players.push(data.playerName);
+        } else if (data.type === 'start') {
+            games[data.gameCode].host = ws;
+            games[data.gameCode].players.forEach(player => {
+                ws.send(JSON.stringify({ type: 'start' }));
+            });
+        } else if (data.type === 'buzz') {
+            games[data.gameCode].buzzes = games[data.gameCode].buzzes || [];
+            if (!games[data.gameCode].buzzes.includes(data.playerName)) {
+                games[data.gameCode].buzzes.push(data.playerName);
+            }
+
+            if (games[data.gameCode].buzzes.length === games[data.gameCode].players.length) {
+                const results = games[data.gameCode].buzzes;
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify({ type: 'results', results }));
+                    }
+                });
+            }
+        }
     });
 
     ws.on('close', () => {
-        console.log('A client disconnected.');
+        console.log('Client disconnected');
     });
 });
 
