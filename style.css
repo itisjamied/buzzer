@@ -209,3 +209,12 @@ ul {
     cursor: pointer;
 }
 
+#countdownPage {
+    background: #FF3355;
+    color: white;
+    font-size: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}

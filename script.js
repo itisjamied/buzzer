@@ -19,6 +19,22 @@ const switchPage = (page) => {
     pages[page].classList.add('active');
 };
 
+const startCountdown = (callback) => {
+    let countdown = 3;
+    const countdownElement = document.getElementById('countdown');
+    switchPage('countdown');
+
+    const interval = setInterval(() => {
+        countdownElement.textContent = countdown;
+        if (countdown === 0) {
+            clearInterval(interval);
+            callback(); // Execute the callback when the countdown ends
+        }
+        countdown--;
+    }, 1000);
+};
+
+
 // Home Page
 document.getElementById('hostButton').addEventListener('click', () => {
     isHost = true;
@@ -64,16 +80,19 @@ document.getElementById('joinGameButton').addEventListener('click', () => {
 // Host Page
 document.getElementById('startRoundButton').addEventListener('click', () => {
     ws.send(JSON.stringify({ type: 'start', gameCode }));
-    switchPage('buzz');
-    // Show appropriate elements based on host status
-    document.getElementById('buzzStatus').style.display = isHost ? 'block' : 'none';
-    document.getElementById('buzzButton').style.display = isHost ? 'none' : 'block';
-    // Update total players count
-    if (isHost) {
-        const playerCount = document.getElementById('playerCount').textContent;
-        document.getElementById('totalPlayers').textContent = playerCount;
-    }
+
+    startCountdown(() => {
+        switchPage('buzz');
+        document.getElementById('buzzStatus').style.display = isHost ? 'block' : 'none';
+        document.getElementById('buzzButton').style.display = isHost ? 'none' : 'block';
+
+        if (isHost) {
+            const playerCount = document.getElementById('playerCount').textContent;
+            document.getElementById('totalPlayers').textContent = playerCount;
+        }
+    });
 });
+
 
 // Buzz Page
 document.getElementById('buzzButton').addEventListener('click', () => {
