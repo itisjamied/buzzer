@@ -34,6 +34,17 @@ const updateHostPlayers = (gameCode) => {
     }
 };
 
+// Helper function to send buzz updates to host
+const updateHostBuzzStatus = (gameCode) => {
+    if (games[gameCode] && games[gameCode].host) {
+        games[gameCode].host.send(JSON.stringify({
+            type: 'buzzUpdate',
+            buzzedPlayers: games[gameCode].buzzes,
+            totalPlayers: games[gameCode].players.length
+        }));
+    }
+};
+
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
@@ -60,9 +71,13 @@ wss.on('connection', (ws) => {
                     client.send(JSON.stringify({ type: 'start' }));
                 }
             });
+            // Send initial buzz status to host
+            updateHostBuzzStatus(data.gameCode);
         } else if (data.type === 'buzz') {
             if (!games[data.gameCode].buzzes.includes(data.playerName)) {
                 games[data.gameCode].buzzes.push(data.playerName);
+                // Send updated buzz status to host
+                updateHostBuzzStatus(data.gameCode);
             }
     
             // Check if all players have buzzed

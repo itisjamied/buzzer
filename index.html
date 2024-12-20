@@ -7,11 +7,21 @@
     <style>
         .page { display: none; }
         .page.active { display: block; }
-        #playerList {
+        #playerList, #buzzStatus {
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+        #buzzOrder {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #buzzOrder li {
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -45,7 +55,12 @@
 
     <div id="buzzPage" class="page">
         <h1>Buzz In!</h1>
-        <button id="buzzButton">Buzz!</button>
+        <div id="buzzStatus" style="display: none;">
+            <h3>Buzz Status: <span id="buzzCounter">0</span> of <span id="totalPlayers">0</span> players</h3>
+            <h4>Buzz Order:</h4>
+            <ul id="buzzOrder"></ul>
+        </div>
+        <button id="buzzButton" style="display: none;">Buzz!</button>
     </div>
 
     <div id="resultPage" class="page">
@@ -101,11 +116,20 @@
         document.getElementById('startRoundButton').addEventListener('click', () => {
             ws.send(JSON.stringify({ type: 'start', gameCode }));
             switchPage('buzz');
+            // Show appropriate elements based on host status
+            document.getElementById('buzzStatus').style.display = isHost ? 'block' : 'none';
+            document.getElementById('buzzButton').style.display = isHost ? 'none' : 'block';
+            // Update total players count
+            if (isHost) {
+                const playerCount = document.getElementById('playerCount').textContent;
+                document.getElementById('totalPlayers').textContent = playerCount;
+            }
         });
 
         // Buzz Page
         document.getElementById('buzzButton').addEventListener('click', () => {
             ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
+            document.getElementById('buzzButton').disabled = true;
         });
 
         // Update player list
@@ -123,6 +147,21 @@
             });
         };
 
+        // Update buzz status
+        const updateBuzzStatus = (buzzedPlayers, totalPlayers) => {
+            const buzzCounter = document.getElementById('buzzCounter');
+            const buzzOrder = document.getElementById('buzzOrder');
+            
+            buzzCounter.textContent = buzzedPlayers.length;
+            buzzOrder.innerHTML = '';
+            
+            buzzedPlayers.forEach((player, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${player}`;
+                buzzOrder.appendChild(li);
+            });
+        };
+
         // WebSocket Events
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -131,6 +170,15 @@
                 updatePlayerList(data.players);
             } else if (data.type === 'start') {
                 switchPage('buzz');
+                // Show appropriate elements based on host status
+                document.getElementById('buzzStatus').style.display = isHost ? 'block' : 'none';
+                document.getElementById('buzzButton').style.display = isHost ? 'none' : 'block';
+                // Reset buzz status for host
+                if (isHost) {
+                    updateBuzzStatus([], document.getElementById('playerCount').textContent);
+                }
+            } else if (data.type === 'buzzUpdate' && isHost) {
+                updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
             } else if (data.type === 'results') {
                 const resultsList = document.getElementById('resultsList');
                 resultsList.innerHTML = '';
