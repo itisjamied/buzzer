@@ -21,14 +21,19 @@ const switchPage = (page) => {
 
 const startCountdown = (callback) => {
     let countdown = 3;
+    const countdownPage = document.getElementById('countdownPage');
     const countdownElement = document.getElementById('countdown');
-    switchPage('countdown');
 
+    // Show countdown page
+    countdownPage.style.display = 'flex';
+
+    // Countdown logic
     const interval = setInterval(() => {
         countdownElement.textContent = countdown;
         if (countdown === 0) {
             clearInterval(interval);
-            callback(); // Execute the callback when the countdown ends
+            countdownPage.style.display = 'none'; // Hide countdown page
+            callback(); // Execute callback after countdown
         }
         countdown--;
     }, 1000);
