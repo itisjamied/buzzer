@@ -187,6 +187,19 @@ ul {
 #resultPage { background: #4A90E2; }
 #resultPage h1 { color: white; }
 
+/* #startNewRoundButton {
+    margin-top: 20px;
+    background: #FF6B6B;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+} */
+
+#resultPage {
+    position: relative;
+}
+
 #startNewRoundButton {
     margin-top: 20px;
     background: #FF6B6B;
@@ -195,3 +208,4 @@ ul {
     border-radius: 8px;
     cursor: pointer;
 }
+
