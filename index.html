@@ -26,9 +26,14 @@
     </style>
      <script>
         // Add this function at the start of your script
+        // function getWebSocketUrl() {
+        //     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        //     return `${protocol}//${window.location.hostname}:8080`;
+        // }
+
         function getWebSocketUrl() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            return `${protocol}//${window.location.hostname}:8080`;
+            return `${protocol}//your-app-name.onrender.com`;
         }
     </script>
 </head>
