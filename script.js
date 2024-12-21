@@ -3,7 +3,6 @@ const ws = new WebSocket(getWebSocketUrl());
 let gameCode = '';
 let isHost = false;
 let playerName = '';
-let startTime = 0;
 
 // Page Elements
 const pages = {
@@ -15,55 +14,10 @@ const pages = {
     result: document.getElementById('resultPage')
 };
 
-// Add back button functionality
-const addBackButton = (pageId) => {
-    const page = document.getElementById(pageId);
-    const backButton = document.createElement('button');
-    backButton.textContent = '← Back';
-    backButton.className = 'back-button';
-    backButton.addEventListener('click', () => {
-        switchPage('home');
-    });
-    page.appendChild(backButton);
-};
-
-// Add back buttons to host and join pages
-addBackButton('hostPage');
-addBackButton('joinPage');
-
 const switchPage = (page) => {
     Object.values(pages).forEach(p => p.classList.remove('active'));
     pages[page].classList.add('active');
 };
-
-// Countdown logic
-const startCountdown = () => {
-    let count = 3;
-    switchPage('countdown');
-    const countdownDisplay = document.getElementById('countdownDisplay');
-    
-    const countdown = setInterval(() => {
-        count--;
-        if (count > 0) {
-            countdownDisplay.textContent = count;
-        } else if (count === 0) {
-            countdownDisplay.textContent = 'GO!';
-        } else {
-            clearInterval(countdown);
-            switchPage('buzz');
-            startTime = Date.now();
-            // Show appropriate elements based on host status
-            document.getElementById('buzzStatus').style.display = isHost ? 'block' : 'none';
-            document.getElementById('buzzButton').style.display = isHost ? 'none' : 'block';
-            // Update total players count
-            if (isHost) {
-                const playerCount = document.getElementById('playerCount').textContent;
-                document.getElementById('totalPlayers').textContent = playerCount;
-            }
-        }
-    }, 1000);
-};
-
 
 // Home Page
 document.getElementById('hostButton').addEventListener('click', () => {
@@ -122,20 +76,8 @@ document.getElementById('startRoundButton').addEventListener('click', () => {
 });
 
 // Buzz Page
-// document.getElementById('buzzButton').addEventListener('click', () => {
-//     ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
-//     document.getElementById('buzzButton').disabled = true;
-// });
-
-// Update buzz button click handler
 document.getElementById('buzzButton').addEventListener('click', () => {
-    const reactionTime = Date.now() - startTime;
-    ws.send(JSON.stringify({ 
-        type: 'buzz', 
-        gameCode, 
-        playerName,
-        reactionTime 
-    }));
+    ws.send(JSON.stringify({ type: 'buzz', gameCode, playerName }));
     document.getElementById('buzzButton').disabled = true;
 });
 
@@ -170,98 +112,61 @@ const updateBuzzStatus = (buzzedPlayers, totalPlayers) => {
 };
 
 // WebSocket Events
-// ws.onmessage = (event) => {
-//   const data = JSON.parse(event.data);
-
-//   if (data.type === "playerUpdate" && isHost) {
-//     updatePlayerList(data.players);
-// } else if (data.type === "start") {
-//     switchPage("buzz");
-//     document.getElementById("buzzButton").disabled = false; // Enable the button
-//     document.getElementById("buzzButton").classList.remove("disabled"); // Remove any disabled styles
-//     document.getElementById("buzzOrder").innerHTML = ""; // Clear the buzz order
-//     document.getElementById("buzzCounter").textContent = "0"; // Reset the counter
-
-//     // Show appropriate elements based on host status
-//     document.getElementById("buzzStatus").style.display = isHost
-//         ? "block"
-//         : "none";
-//     document.getElementById("buzzButton").style.display = isHost
-//         ? "none"
-//         : "block";
-
-//     // Reset buzz status for host
-//     if (isHost) {
-//         updateBuzzStatus([], document.getElementById("playerCount").textContent);
-//     }
-
-
-//   } else if (data.type === "buzzUpdate" && isHost) {
-//     updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
-//   } else if (data.type === "results") {
-//     const resultsList = document.getElementById("resultsList");
-//     resultsList.innerHTML = "";
-//     data.results.forEach((result, index) => {
-//       const li = document.createElement("li");
-//       li.textContent = `${index + 1}. ${result}`;
-//       resultsList.appendChild(li);
-//     });
-
-//     // Check if the user is the host and add the "Start New Round" button
-//     if (isHost) {
-//       let startNewRoundButton = document.getElementById("startNewRoundButton");
-//       if (!startNewRoundButton) {
-//         startNewRoundButton = document.createElement("button");
-//         startNewRoundButton.textContent = "Start New Round";
-//         startNewRoundButton.id = "startNewRoundButton";
-//         startNewRoundButton.addEventListener("click", () => {
-//           ws.send(JSON.stringify({ type: "start", gameCode }));
-//           switchPage("buzz");
-//         });
-//         document.getElementById("resultPage").appendChild(startNewRoundButton);
-//       }
-//       startNewRoundButton.style.display = "block"; // Ensure it is visible
-//     }
-
-//     switchPage("result");
-//   }
-// };
-
-// update web socket events
 ws.onmessage = (event) => {
-    const data = JSON.parse(event.data);
+  const data = JSON.parse(event.data);
 
-    if (data.type === 'playerUpdate' && isHost) {
-        updatePlayerList(data.players);
-    } else if (data.type === 'start') {
-        startCountdown();
-    } else if (data.type === 'buzzUpdate' && isHost) {
-        updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
-    } else if (data.type === 'results') {
-        const resultsList = document.getElementById('resultsList');
-        resultsList.innerHTML = '';
-        data.results.forEach((result, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `${index + 1}. ${result.playerName}<br>
-                <span class="reaction-time">${(result.reactionTime / 1000).toFixed(3)} seconds</span>`;
-            resultsList.appendChild(li);
-        });
+  if (data.type === "playerUpdate" && isHost) {
+    updatePlayerList(data.players);
+} else if (data.type === "start") {
+    switchPage("buzz");
+    document.getElementById("buzzButton").disabled = false; // Enable the button
+    document.getElementById("buzzButton").classList.remove("disabled"); // Remove any disabled styles
+    document.getElementById("buzzOrder").innerHTML = ""; // Clear the buzz order
+    document.getElementById("buzzCounter").textContent = "0"; // Reset the counter
 
-        if (isHost) {
-            let startNewRoundButton = document.getElementById('startNewRoundButton');
-            if (!startNewRoundButton) {
-                startNewRoundButton = document.createElement('button');
-                startNewRoundButton.textContent = 'Start New Round';
-                startNewRoundButton.id = 'startNewRoundButton';
-                startNewRoundButton.addEventListener('click', () => {
-                    ws.send(JSON.stringify({ type: 'start', gameCode }));
-                });
-                document.getElementById('resultPage').appendChild(startNewRoundButton);
-            }
-            startNewRoundButton.style.display = 'block';
-        }
-        switchPage('result');
+    // Show appropriate elements based on host status
+    document.getElementById("buzzStatus").style.display = isHost
+        ? "block"
+        : "none";
+    document.getElementById("buzzButton").style.display = isHost
+        ? "none"
+        : "block";
+
+    // Reset buzz status for host
+    if (isHost) {
+        updateBuzzStatus([], document.getElementById("playerCount").textContent);
     }
+
+
+  } else if (data.type === "buzzUpdate" && isHost) {
+    updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
+  } else if (data.type === "results") {
+    const resultsList = document.getElementById("resultsList");
+    resultsList.innerHTML = "";
+    data.results.forEach((result, index) => {
+      const li = document.createElement("li");
+      li.textContent = `${index + 1}. ${result}`;
+      resultsList.appendChild(li);
+    });
+
+    // Check if the user is the host and add the "Start New Round" button
+    if (isHost) {
+      let startNewRoundButton = document.getElementById("startNewRoundButton");
+      if (!startNewRoundButton) {
+        startNewRoundButton = document.createElement("button");
+        startNewRoundButton.textContent = "Start New Round";
+        startNewRoundButton.id = "startNewRoundButton";
+        startNewRoundButton.addEventListener("click", () => {
+          ws.send(JSON.stringify({ type: "start", gameCode }));
+          switchPage("buzz");
+        });
+        document.getElementById("resultPage").appendChild(startNewRoundButton);
+      }
+      startNewRoundButton.style.display = "block"; // Ensure it is visible
+    }
+
+    switchPage("result");
+  }
 };
 
 
