@@ -112,48 +112,79 @@ const updateHostBuzzStatus = (gameCode) => {
 // };
 
 // In server.js
+// const startCountdown = (gameCode) => {
+//     const game = games[gameCode];
+//     if (!game) return;
+
+//     const countdownFrom = 3;
+//     let currentCount = countdownFrom;
+    
+//     const sendToGameParticipants = (message) => {
+//         // Send to host
+//         if (game.host && game.host.readyState === WebSocket.OPEN) {
+//             game.host.send(JSON.stringify(message));
+//         }
+//         // Send to all players
+//         game.playerConnections.forEach((ws) => {
+//             if (ws.readyState === WebSocket.OPEN) {
+//                 ws.send(JSON.stringify(message));
+//             }
+//         });
+//     };
+
+//     // Send initial countdown
+//     sendToGameParticipants({ 
+//         type: 'countdown',
+//         count: currentCount 
+//     });
+
+//     const countdownInterval = setInterval(() => {
+//         currentCount--;
+        
+//         if (currentCount > 0) {
+//             sendToGameParticipants({ 
+//                 type: 'countdown',
+//                 count: currentCount 
+//             });
+//         } else {
+//             clearInterval(countdownInterval);
+//             games[gameCode].buzzes = [];
+//             sendToGameParticipants({ type: 'start' });
+//             updateHostBuzzStatus(gameCode);
+//         }
+//     }, 1000);
+// };
+
+const sendToPlayersOnly = (message) => {
+    game.playerConnections.forEach((ws) => {
+        if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify(message));
+        }
+    });
+};
+
 const startCountdown = (gameCode) => {
     const game = games[gameCode];
     if (!game) return;
 
     const countdownFrom = 3;
     let currentCount = countdownFrom;
-    
-    const sendToGameParticipants = (message) => {
-        // Send to host
-        if (game.host && game.host.readyState === WebSocket.OPEN) {
-            game.host.send(JSON.stringify(message));
-        }
-        // Send to all players
-        game.playerConnections.forEach((ws) => {
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify(message));
-            }
-        });
-    };
 
-    // Send initial countdown
-    sendToGameParticipants({ 
-        type: 'countdown',
-        count: currentCount 
-    });
+    sendToPlayersOnly({ type: 'countdown', count: currentCount });
 
     const countdownInterval = setInterval(() => {
         currentCount--;
-        
+
         if (currentCount > 0) {
-            sendToGameParticipants({ 
-                type: 'countdown',
-                count: currentCount 
-            });
+            sendToPlayersOnly({ type: 'countdown', count: currentCount });
         } else {
             clearInterval(countdownInterval);
-            games[gameCode].buzzes = [];
-            sendToGameParticipants({ type: 'start' });
-            updateHostBuzzStatus(gameCode);
+            game.buzzes = [];
+            sendToPlayersOnly({ type: 'start' });
         }
     }, 1000);
 };
+
 
 
 wss.on('connection', (ws) => {

@@ -118,7 +118,10 @@ ws.onmessage = (event) => {
 
     if (data.type === 'playerUpdate' && isHost) {
         updatePlayerList(data.players);
-    } else if (data.type === 'countdown') {
+    } 
+    
+    
+    else if (data.type === 'countdown'&& !isHost ) {
         // Show countdown display and hide other elements
         countdownDisplay.style.display = 'block';
         document.getElementById('buzzStatus').style.display = 'none';
@@ -129,7 +132,12 @@ ws.onmessage = (event) => {
         countdownDisplay.style.animation = 'none';
         countdownDisplay.offsetHeight; // Trigger reflow
         countdownDisplay.style.animation = 'bounceIn 0.3s ease';
-    } else if (data.type === 'start') {
+    } 
+    
+    
+    
+    
+    else if (data.type === 'start' && !isHost) {
         // Hide countdown and show appropriate elements
         countdownDisplay.style.display = 'none';
         document.getElementById('buzzButton').disabled = false;
@@ -144,6 +152,9 @@ ws.onmessage = (event) => {
         if (isHost) {
             updateBuzzStatus([], document.getElementById('playerCount').textContent);
         }
+
+
+
     } else if (data.type === 'buzzUpdate' && isHost) {
         updateBuzzStatus(data.buzzedPlayers, data.totalPlayers);
     } else if (data.type === 'results') {
