@@ -14,10 +14,29 @@ const pages = {
     result: document.getElementById('resultPage')
 };
 
+
+// Switch between pages
 const switchPage = (page) => {
     Object.values(pages).forEach(p => p.classList.remove('active'));
     pages[page].classList.add('active');
 };
+
+// Add back button functionality
+const addBackButton = (pageId) => {
+    const page = document.getElementById(pageId);
+    const backButton = document.createElement('button');
+    backButton.textContent = '← Back';
+    backButton.className = 'back-button';
+    backButton.addEventListener('click', () => {
+        switchPage('home');
+    });
+    page.appendChild(backButton);
+};
+
+// Add back buttons to host and join pages
+addBackButton('hostPage');
+addBackButton('joinPage');
+
 
 // Home Page
 document.getElementById('hostButton').addEventListener('click', () => {
