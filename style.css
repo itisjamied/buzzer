@@ -209,3 +209,29 @@ ul {
     cursor: pointer;
 }
 
+#countdownPage {
+    background: #FF3355;
+}
+
+#countdownDisplay {
+    font-size: 8rem;
+    color: white;
+    animation: pulse 1s infinite;
+}
+
+.back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    color:black;
+}
+
+.reaction-time {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
+}

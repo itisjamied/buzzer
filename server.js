@@ -57,11 +57,22 @@ const updateHostPlayers = (gameCode) => {
 };
 
 // Helper function to send buzz updates to host
+// const updateHostBuzzStatus = (gameCode) => {
+//     if (games[gameCode] && games[gameCode].host) {
+//         games[gameCode].host.send(JSON.stringify({
+//             type: 'buzzUpdate',
+//             buzzedPlayers: games[gameCode].buzzes,
+//             totalPlayers: games[gameCode].players.length
+//         }));
+//     }
+// };
+
+// Update the updateHostBuzzStatus function
 const updateHostBuzzStatus = (gameCode) => {
     if (games[gameCode] && games[gameCode].host) {
         games[gameCode].host.send(JSON.stringify({
             type: 'buzzUpdate',
-            buzzedPlayers: games[gameCode].buzzes,
+            buzzedPlayers: games[gameCode].buzzes.map(buzz => buzz.playerName),
             totalPlayers: games[gameCode].players.length
         }));
     }
@@ -95,13 +106,21 @@ wss.on('connection', (ws) => {
             });
             // Send initial buzz status to host
             updateHostBuzzStatus(data.gameCode);
-        } else if (data.type === 'buzz') {
-            if (!games[data.gameCode].buzzes.includes(data.playerName)) {
-                games[data.gameCode].buzzes.push(data.playerName);
+        }
+        else if (data.type === 'buzz') {
+            if (!games[data.gameCode].buzzes.some(buzz => buzz.playerName === data.playerName)) {
+                games[data.gameCode].buzzes.push({
+                    playerName: data.playerName,
+                    reactionTime: data.reactionTime
+                });
+                
+                // Sort buzzes by reaction time
+                games[data.gameCode].buzzes.sort((a, b) => a.reactionTime - b.reactionTime);
+                
                 // Send updated buzz status to host
                 updateHostBuzzStatus(data.gameCode);
             }
-    
+        
             // Check if all players have buzzed
             if (games[data.gameCode].buzzes.length === games[data.gameCode].players.length) {
                 const results = games[data.gameCode].buzzes;
@@ -112,6 +131,23 @@ wss.on('connection', (ws) => {
                 });
             }
         }
+        // } else if (data.type === 'buzz') {
+        //     if (!games[data.gameCode].buzzes.includes(data.playerName)) {
+        //         games[data.gameCode].buzzes.push(data.playerName);
+        //         // Send updated buzz status to host
+        //         updateHostBuzzStatus(data.gameCode);
+        //     }
+    
+        //     // Check if all players have buzzed
+        //     if (games[data.gameCode].buzzes.length === games[data.gameCode].players.length) {
+        //         const results = games[data.gameCode].buzzes;
+        //         wss.clients.forEach(client => {
+        //             if (client.readyState === WebSocket.OPEN) {
+        //                 client.send(JSON.stringify({ type: 'results', results }));
+        //             }
+        //         });
+        //     }
+        // }
     });
     
     ws.on('close', () => {
