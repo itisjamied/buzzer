@@ -15,7 +15,6 @@ const server = http.createServer((req, res) => {
             }
         });
     } else if (req.url === '/style.css') {
-        // Serve style.css
         fs.readFile(path.join(__dirname, 'style.css'), (err, data) => {
             if (err) {
                 res.writeHead(500);
@@ -26,7 +25,6 @@ const server = http.createServer((req, res) => {
             }
         });
     } else if (req.url === '/script.js') {
-        // Serve script.js
         fs.readFile(path.join(__dirname, 'script.js'), (err, data) => {
             if (err) {
                 res.writeHead(500);
@@ -67,6 +65,49 @@ const updateHostBuzzStatus = (gameCode) => {
     }
 };
 
+// Helper function to broadcast countdown to all players in a game
+const startCountdown = (gameCode) => {
+    const countdownFrom = 3;
+    let currentCount = countdownFrom;
+    
+    // Send initial countdown message
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ 
+                type: 'countdown',
+                count: currentCount
+            }));
+        }
+    });
+
+    // Set up countdown interval
+    const countdownInterval = setInterval(() => {
+        currentCount--;
+        
+        if (currentCount > 0) {
+            // Send current count
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ 
+                        type: 'countdown',
+                        count: currentCount
+                    }));
+                }
+            });
+        } else {
+            // Countdown finished, start the round
+            clearInterval(countdownInterval);
+            games[gameCode].buzzes = [];
+            wss.clients.forEach(client => {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(JSON.stringify({ type: 'start' }));
+                }
+            });
+            updateHostBuzzStatus(gameCode);
+        }
+    }, 1000);
+};
+
 wss.on('connection', (ws) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
@@ -82,9 +123,9 @@ wss.on('connection', (ws) => {
                 games[data.gameCode] = { host: null, players: [], buzzes: [] };
             }
             games[data.gameCode].players.push(data.playerName);
-            // Send updated player list to host
             updateHostPlayers(data.gameCode);
         } else if (data.type === 'start') {
+            // Start countdown instead of immediately starting the round
             // Reset buzzes array for new round
             games[data.gameCode].buzzes = [];
             // Notify all players the round has started
@@ -95,14 +136,13 @@ wss.on('connection', (ws) => {
             });
             // Send initial buzz status to host
             updateHostBuzzStatus(data.gameCode);
+            startCountdown(data.gameCode);
         } else if (data.type === 'buzz') {
             if (!games[data.gameCode].buzzes.includes(data.playerName)) {
                 games[data.gameCode].buzzes.push(data.playerName);
-                // Send updated buzz status to host
                 updateHostBuzzStatus(data.gameCode);
             }
     
-            // Check if all players have buzzed
             if (games[data.gameCode].buzzes.length === games[data.gameCode].players.length) {
                 const results = games[data.gameCode].buzzes;
                 wss.clients.forEach(client => {
@@ -115,12 +155,10 @@ wss.on('connection', (ws) => {
     });
     
     ws.on('close', () => {
-        // Clean up games and remove disconnected players
         for (const gameCode in games) {
             if (games[gameCode].host === ws) {
                 games[gameCode].host = null;
             } else {
-                // Find and remove disconnected player
                 for (const gameCode in games) {
                     const players = games[gameCode].players;
                     for (let i = players.length - 1; i >= 0; i--) {
@@ -136,10 +174,6 @@ wss.on('connection', (ws) => {
         console.log('Client disconnected');
     });
 });
-
-// server.listen(8080, () => {
-//     console.log('Server is running on http://localhost:8080');
-// });
 
 const port = process.env.PORT || 8080;
 server.listen(port, () => {
