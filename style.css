@@ -155,7 +155,7 @@ ul {
 #resultsList li:nth-child(1) { background: #FFD700; }
 #resultsList li:nth-child(2) { background: #C0C0C0; }
 #resultsList li:nth-child(3) { background: #CD7F32; }
-#resultsList li:nth-child(n+4) { background: #F8F9FA; }
+#resultsList li:nth-child(n+4) { background: #1e65ab; }
 
 /* Animations */
 @keyframes bounceIn {
